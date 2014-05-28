@@ -6,7 +6,6 @@
     android:scrollbars="vertical" >
 
     <TableLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -46,9 +45,8 @@
             android:id="@+id/tvVersionExpert"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:typeface="normal" >
-        </TextView>
+            android:typeface="normal"
+            android:textSize="8sp" />
     </TableLayout>
 
 </ScrollView>
