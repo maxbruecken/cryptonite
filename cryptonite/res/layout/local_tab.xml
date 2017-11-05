@@ -115,8 +115,10 @@
             android:id="@+id/tvVersionLocal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:textStyle="bold"
             android:typeface="normal"
-            android:textSize="8sp" />
+            android:textIsSelectable="true">
+        </TextView>
     </TableLayout>
 
 </ScrollView>

@@ -58,6 +58,8 @@ fuse28/libs
 fuse28/obj
 fuse29/libs
 fuse29/obj
+fuse293/libs
+fuse293/obj
 
 # rlog source
 
@@ -82,6 +84,10 @@ tinyxml/tinyxml*
 # encfs source
 
 encfs-1.7.4/encfs-1*
+encfs-1.7.5/encfs-1*
+encfs-1.7.5/*.tar.gz
+encfs-1.8.1/encfs-1.8.1
+encfs-1.8.1/*.tar.gz
 
 # encfs svn build
 
@@ -142,6 +148,8 @@ cryptonite/tests/libs
 cryptonite/tests/libs/*
 cryptonite/tests/obj
 cryptonite/tests/obj/*
+cryptonite/out
+*.apk
 
 # gradle noise
 cryptonite/.gradle

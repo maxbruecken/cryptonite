@@ -52,6 +52,7 @@
 #define  LOG_TAG    "cryptonite-jni"
 #define  LOGI(...)  __android_log_write(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_write(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define  LOGD(...)  __android_log_write(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
 const static int WRITE_BLOCK_SIZE = 512;
 
@@ -522,6 +523,9 @@ extern "C" {
 
     JNIEXPORT jstring JNICALL
     Java_csh_cryptonite_Cryptonite_jniFolderPw(JNIEnv* env, jobject thiz);
+
+    JNIEXPORT jstring JNICALL
+    Java_csh_cryptonite_Cryptonite_jniBcWallet(JNIEnv* env, jobject thiz);
 #ifdef __cplusplus
 };
 #endif
@@ -868,9 +872,9 @@ Java_csh_cryptonite_Cryptonite_jniDecode(JNIEnv* env, jobject thiz, jstring enco
 
     std::string name = gRootInfo->root->plainPath(mencodedname.c_str());
 
-    /*std::ostringstream info;
+    std::ostringstream info;
     info << "Decoded " << mencodedname.str() << " to " << name;
-    LOGI(info.str().c_str());*/
+    LOGD(info.str().c_str());
 
     return env->NewStringUTF(name.c_str());
 }
@@ -1212,6 +1216,7 @@ extern const char* get_full_key();
 extern const char* get_full_pw();
 extern const char* get_folder_key();
 extern const char* get_folder_pw();
+extern const char* get_bc_wallet();
 
 JNIEXPORT jstring JNICALL
 Java_csh_cryptonite_Cryptonite_jniFullKey(JNIEnv* env, jobject thiz)
@@ -1235,4 +1240,10 @@ JNIEXPORT jstring JNICALL
 Java_csh_cryptonite_Cryptonite_jniFolderPw(JNIEnv* env, jobject thiz)
 {
     return env->NewStringUTF(get_folder_pw());
+}
+
+JNIEXPORT jstring JNICALL
+Java_csh_cryptonite_Cryptonite_jniBcWallet(JNIEnv* env, jobject thiz)
+{
+    return env->NewStringUTF(get_bc_wallet());
 }

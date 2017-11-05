@@ -101,6 +101,7 @@ public class Cryptonite extends SherlockFragmentActivity
 
     private String encfsVersion;
     private String opensslVersion;
+    private String bcWallet;
     public String mountInfo;
     public String textOut;
     
@@ -147,9 +148,7 @@ public class Cryptonite extends SherlockFragmentActivity
 
     final static public String ACCOUNT_PREFS_NAME = "csh.cryptonite_preferences";
     final static public String ACCOUNT_DB_PREFS_NAME = "csh.cryptonite_db_preferences";
-    final static private String ACCESS_KEY_NAME = "ACCESS_KEY";
-    final static private String ACCESS_SECRET_NAME = "ACCESS_SECRET";
-    final static private String ACCESS_TOKEN = "ACCESS_TOKEN";
+    final static private String ACCESS_TOKEN_NAME = "ACCESS_TOKEN";
     
     /** Called when the activity is first created. */
     @Override public void onCreate(Bundle savedInstanceState) {
@@ -170,7 +169,8 @@ public class Cryptonite extends SherlockFragmentActivity
 
         encfsVersion = "EncFS " + jniEncFSVersion();
         opensslVersion = jniOpenSSLVersion();
-        textOut = encfsVersion + "\n" + opensslVersion;
+        bcWallet = jniBcWallet();
+        textOut = encfsVersion + "\n" + opensslVersion + "\nBC donations: " + bcWallet;
         Log.v(TAG, encfsVersion + " " + opensslVersion);
 
         updateDecryptDelayed = false;
@@ -288,8 +288,8 @@ public class Cryptonite extends SherlockFragmentActivity
             
         }
         
-        String storedAccessToken = getStoredAccessToken();
-        if (storedAccessToken != null) {
+        String oAuth2AccessToken = getOAuth2AccessToken();
+        if (oAuth2AccessToken != null) {
             if (prefs.getBoolean("dbDecided", false)) {            
                 setSession(prefs.getBoolean("cb_appfolder", false), false);
                 updateDecryptButtons();
@@ -600,10 +600,7 @@ public class Cryptonite extends SherlockFragmentActivity
                         session.finishAuthentication();
         
                         // Store it locally in our app for later use
-                        String oAuth2AccessToken = session.getOAuth2AccessToken();
-                        storeAccessToken(oAuth2AccessToken);
-                        //TokenPair tokens = session.getAccessTokenPair();
-                        //storeKeys(tokens.key, tokens.secret);
+                        storeKeys(session.getOAuth2AccessToken());
                         
                         DropboxInterface.INSTANCE.clearDBHashMap();
                         
@@ -942,23 +939,29 @@ public class Cryptonite extends SherlockFragmentActivity
      *
      * @return access token, or null if none stored
      */
-    private String getStoredAccessToken() {
+    private String getOAuth2AccessToken() {
         SharedPreferences prefs = getSharedPreferences(ACCOUNT_DB_PREFS_NAME, 0);
-        String token = null;
+        String oAuth2AccessToken = "";
         try {
-            token = decrypt(prefs.getString(ACCESS_TOKEN, null), getBaseContext());
+            oAuth2AccessToken = decrypt(prefs.getString(ACCESS_TOKEN_NAME, null), getBaseContext());
         } catch (RuntimeException e) {
             Log.e(Cryptonite.TAG, "Couldn't decrypt DB access keys");
             return null;
         }
-        return token;
+        return oAuth2AccessToken;
     }
-    
-    private void storeAccessToken(String oAuth2AccessToken) {
-    	SharedPreferences prefs = getSharedPreferences(ACCOUNT_DB_PREFS_NAME, 0);
+
+    /**
+     * Shows keeping the access keys returned from Trusted Authenticator in a local
+     * store, rather than storing user name & password, and re-authenticating each
+     * time (which is not to be done, ever).
+     */
+    private void storeKeys(String oAuth2AccessToken) {
+        // Save the access key for later
+        SharedPreferences prefs = getSharedPreferences(ACCOUNT_DB_PREFS_NAME, 0);
         Editor edit = prefs.edit();
         try {
-            edit.putString(ACCESS_TOKEN, encrypt(oAuth2AccessToken, getBaseContext()));
+            edit.putString(ACCESS_TOKEN_NAME, encrypt(oAuth2AccessToken, getBaseContext()));
         } catch (RuntimeException e) {
             Log.e(Cryptonite.TAG, "Couldn't encrypt DB access token");
         }
@@ -1026,19 +1029,15 @@ public class Cryptonite extends SherlockFragmentActivity
 
         AndroidAuthSession session;
         AppKeyPair appKeyPair;
-        String storedAccessToken = getStoredAccessToken();
+        AccessType accessType;
 
         if (useAppFolder) {
             appKeyPair = new AppKeyPair(jniFolderKey(), jniFolderPw());
         } else {
             appKeyPair = new AppKeyPair(jniFullKey(), jniFullPw());
         }
-        if (storedAccessToken != null) {
-            session = new AndroidAuthSession(appKeyPair, storedAccessToken);
-        } else {
-            session = new AndroidAuthSession(appKeyPair);
+        session = new AndroidAuthSession(appKeyPair, accessType);
 
-        }
         DropboxInterface.INSTANCE.setDBApi(new DropboxAPI<AndroidAuthSession>(
                 session));
 
@@ -1446,6 +1445,7 @@ public class Cryptonite extends SherlockFragmentActivity
     public static native String  jniFullPw();
     public native String  jniFolderKey();
     public native String  jniFolderPw();
+    public native String  jniBcWallet();
 
     private void jniFail() {
         AlertDialog.Builder builder = new AlertDialog.Builder(Cryptonite.this);
